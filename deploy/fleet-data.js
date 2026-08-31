@@ -46,84 +46,92 @@ window.FLEET_DATA = {
     { fy: "FY2028-2029", total: 24, note: "", moves: [
       { cat: "leaseIn", type: "B787-9", n: 1, when: "", mark: "" }
     ] },
-    { fy: "FY2029-2030", total: 24, note: "", moves: [
+    { fy: "FY2029-2030", total: 26, note: "", moves: [
       { cat: "leaseIn", type: "B787-9", n: 1, when: "", mark: "" },
       { cat: "leaseIn", type: "B737-8 MAX", n: 1, when: "", mark: "" },
       { cat: "phaseOut", type: "B737-800", n: 1, when: "Jun", mark: "" },
-      { cat: "phaseOut", type: "B737-800", n: 1, when: "Sep", mark: "" }
+      { cat: "phaseOut", type: "B737-800", n: 1, when: "Sep", mark: "" },
+      { cat: "leaseIn", type: "B737-8 MAX", n: 2, when: "", mark: "" }
     ] },
-    { fy: "FY2030-2031", total: 26, note: "", moves: [
+    { fy: "FY2030-2031", total: 28, note: "", moves: [
       { cat: "leaseIn", type: "B787-9", n: 2, when: "", mark: "" }
     ] },
-    { fy: "FY2031-2032", total: 30, note: "", moves: [
+    { fy: "FY2031-2032", total: 33, note: "", moves: [
       { cat: "boeing", type: "B787-9", n: 2, when: "Nov, Feb", mark: "" },
       { cat: "boeing", type: "B737-8 MAX", n: 2, when: "Apr, Jun", mark: "" },
       { cat: "leaseIn", type: "Dash-8-400", n: 1, when: "", mark: "*" }
     ] },
-    { fy: "FY2032-2033", total: 30, note: "", moves: [
+    { fy: "FY2032-2033", total: 33, note: "", moves: [
       { cat: "boeing", type: "B737-8 MAX", n: 2, when: "Aug, Oct", mark: "" },
       { cat: "boeing", type: "B787-10", n: 2, when: "Jul, Sep", mark: "" },
-      { cat: "leaseIn", type: "B787-9", n: 1, when: "", mark: "*" },
+      // { cat: "leaseIn", type: "B787-9", n: 1, when: "", mark: "*" },
       { cat: "leaseReturn", type: "B737-8 MAX", n: 2, when: "", mark: "" },
       { cat: "leaseReturn", type: "B787-9", n: 2, when: "", mark: "" }
     ] },
-    { fy: "FY2033-2034", total: 35, note: "", moves: [
+    { fy: "FY2033-2034", total: 38, note: "", moves: [
       { cat: "boeing", type: "B787-10", n: 2, when: "Apr, Oct", mark: "" },
       { cat: "airbus", type: "A321neo", n: 2, when: "2nd half 2033", mark: "" },
       { cat: "airbus", type: "A321neo", n: 2, when: "1st half 2034", mark: "" },
       { cat: "airbus", type: "A350-900", n: 1, when: "1st half 2034", mark: "" },
-      { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "", mark: "*" },
+      // { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "", mark: "*" },
       { cat: "leaseReturn", type: "B787-9", n: 2, when: "", mark: "" }
     ] },
-    { fy: "FY2034-2035", total: 39, note: "", moves: [
+    { fy: "FY2034-2035", total: 42, note: "", moves: [
       { cat: "boeing", type: "B787-10", n: 2, when: "Apr, Oct", mark: "" },
       { cat: "airbus", type: "A321neo", n: 2, when: "2nd half 2034", mark: "" },
       { cat: "airbus", type: "A350-900", n: 1, when: "2nd half 2034", mark: "" },
       { cat: "airbus", type: "A350-900", n: 1, when: "1st half 2035", mark: "" },
       { cat: "leaseReturn", type: "B787-9", n: 2, when: "", mark: "" }
     ] },
-    { fy: "FY2035-2036", total: 41, note: "", moves: [
+    { fy: "FY2035-2036", total: 44, note: "", moves: [
       { cat: "boeing", type: "B787-10", n: 2, when: "Apr, Oct", mark: "" },
       { cat: "airbus", type: "A350-900", n: 1, when: "2nd half 2035", mark: "" },
       { cat: "leaseReturn", type: "B787-9", n: 1, when: "", mark: "" }
     ] },
-    { fy: "FY2036-2037", total: 40, note: "", moves: [
+    { fy: "FY2036-2037", total: 45, note: "", moves: [
       { cat: "leaseIn", type: "Dash-8-400", n: 1, when: "", mark: "*" },
       { cat: "leaseIn", type: "B787-10", n: 2, when: "", mark: "**" },
-      { cat: "phaseOut", type: "Dash-8 Q400", n: 1, when: "Mar", mark: "" },
+      // { cat: "phaseOut", type: "Dash-8 Q400", n: 1, when: "Mar", mark: "" },
       { cat: "phaseOut", type: "B777-300ER", n: 1, when: "Oct", mark: "" },
       { cat: "phaseOut", type: "B777-300ER", n: 1, when: "Nov", mark: "" }
     ] },
-    { fy: "FY2037-2038", total: 40, note: "", moves: [] },
-    { fy: "FY2038-2039", total: 40, note: "", moves: [
+    { fy: "FY2037-2038", total: 45, note: "", moves: [] },
+    { fy: "FY2038-2039", total: 46, note: "", moves: [
       { cat: "leaseIn", type: "Dash-8-400", n: 1, when: "", mark: "*" }
     ] },
-    { fy: "FY2039-2040", total: 40, note: "", moves: [
+    { fy: "FY2039-2040", total: 46, note: "", moves: [
       { cat: "leaseIn", type: "B787-10", n: 2, when: "", mark: "**" },
       { cat: "phaseOut", type: "B777-300ER", n: 1, when: "Feb", mark: "" },
       { cat: "phaseOut", type: "B777-300ER", n: 1, when: "Mar", mark: "" }
     ] },
-    { fy: "FY2040-2041", total: 38, note: "", moves: [
+    { fy: "FY2040-2041", total: 46, note: "", moves: [
       { cat: "phaseOut", type: "B737-800", n: 1, when: "Nov", mark: "" },
-      { cat: "phaseOut", type: "B737-800", n: 1, when: "Dec", mark: "" }
+      { cat: "phaseOut", type: "B737-800", n: 1, when: "Dec", mark: "" },
+       { cat: "leaseIn", type: "B737-8 MAX", n: 2, when: "", mark: "" },
     ] },
-    { fy: "FY2041-2042", total: 38, note: "", moves: [] },
-    { fy: "FY2042-2043", total: 38, note: "", moves: [] },
-    { fy: "FY2043-2044", total: 36, note: "", moves: [
+    { fy: "FY2041-2042", total: 46, note: "", moves: [] },
+    { fy: "FY2042-2043", total: 46, note: "", moves: [] },
+    { fy: "FY2043-2044", total: 46, note: "", moves: [
       { cat: "phaseOut", type: "B787-8", n: 1, when: "Aug", mark: "" },
-      { cat: "phaseOut", type: "B787-8", n: 1, when: "Nov", mark: "" }
+      { cat: "phaseOut", type: "B787-8", n: 1, when: "Nov", mark: "" },
+      { cat: "leaseIn", type: "B787-10", n: 2, when: "", mark: "" },
     ] },
-    { fy: "FY2044-2045", total: 32, note: "", moves: [
+    { fy: "FY2044-2045", total: 46, note: "", moves: [
       { cat: "phaseOut", type: "B787-8", n: 1, when: "Jul", mark: "" },
       { cat: "phaseOut", type: "B787-8", n: 1, when: "Sep", mark: "" },
-      { cat: "phaseOut", type: "B787-9", n: 2, when: "Dec", mark: "" }
+      { cat: "phaseOut", type: "B787-9", n: 2, when: "Dec", mark: "" },
+       { cat: "leaseIn", type: "B787-10", n: 4, when: "Jul", mark: "" },
+
     ] },
-    { fy: "FY2045-2046", total: 31, note: "", moves: [
-      { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "Nov", mark: "" }
+    { fy: "FY2045-2046", total: 46, note: "", moves: [
+      { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "Nov", mark: "" },
+      { cat: "leaseIn", type: "Dash-8-400", n: 1, when: "", mark: "" }
     ] },
-    { fy: "FY2046-2047", total: 29, note: "", moves: [
+    { fy: "FY2046-2047", total: 46, note: "", moves: [
       { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "Feb", mark: "" },
-      { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "Mar", mark: "" }
+      { cat: "phaseOut", type: "Dash-8-400", n: 1, when: "Mar", mark: "" },
+      { cat: "leaseIn", type: "Dash-8-400", n: 2, when: "", mark: "" },
+     
     ] }
   ]
 };
