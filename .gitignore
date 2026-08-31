@@ -1,0 +1,12 @@
+# Source material — not part of the site, keep it off GitHub
+uploads/
+scraps/
+
+# Editor / local-history noise
+.history/
+.vscode/
+.thumbnail
+*.bak
+
+# Vercel CLI
+.vercel/

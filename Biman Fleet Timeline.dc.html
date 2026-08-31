@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="./fleet-data.js"></script>
+<style>
+  body { margin: 0; background: #F8FAFC; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { color: #1D4ED8; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#F8FAFC;color:#020617;font-family:'Geist',system-ui,sans-serif;padding:32px 40px 48px;display:flex;flex-direction:column;gap:20px;max-width:1480px;margin:0 auto;box-sizing:border-box">
+
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid #E2E8F0;padding-bottom:18px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#64748B">{{ meta.airline }}</div>
+      <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.01em;line-height:1.2">Projected phase-out, replacement, purchase and lease of aircraft</h1>
+      <!-- <div style="font-size:14px;color:#64748B;line-height:1.5;max-width:78ch">{{ meta.range }} Hover or click a fiscal year to see the aircraft moving in and out.</div> -->
+    </div>
+    <div style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B;text-align:right;white-space:nowrap">{{ meta.counts }}<br />{{ meta.baseline }}</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+      <div style="border:1px solid #E2E8F0;background:#FFFFFF;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748B">{{ k.label }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:26px;font-weight:500;line-height:1;letter-spacing:-0.01em">{{ k.value }}</div>
+        <div style="font-size:12px;color:#94A3B8">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <sc-for list="{{ legend }}" as="c" hint-placeholder-count="5">
+      <button onClick="{{ c.toggle }}" style="{{ c.style }}" style-hover="border-color:#CBD5E1">
+        <span style="{{ c.swatch }}"></span>
+        <span>{{ c.label }}</span>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B">{{ c.count }}</span>
+      </button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div style="font-size:12px;color:#94A3B8">Click a chip to hide that movement type</div>
+  </div>
+
+  <div style="border:1px solid #E2E8F0;background:#FFFFFF;border-radius:8px;padding:12px 16px 40px">
+    <div style="position:relative">
+      <svg viewBox="0 0 1400 540" style="width:100%;height:auto;display:block" onMouseLeave="{{ clearHover }}">
+        <sc-if value="{{ activeCol }}" hint-placeholder-val="{{ true }}">
+          <rect x="{{ activeCol.x }}" y="30" width="{{ activeCol.w }}" height="465" fill="#2563EB" opacity="0.055" rx="4"></rect>
+        </sc-if>
+
+        <sc-for list="{{ gridlines }}" as="g" hint-placeholder-count="4">
+          <line x1="64" x2="1376" y1="{{ g.y }}" y2="{{ g.y }}" stroke="#E2E8F0" stroke-width="1"></line>
+        </sc-for>
+
+        <path d="{{ areaPath }}" fill="#2563EB" opacity="0.09"></path>
+        <path d="{{ linePath }}" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>
+        <sc-for list="{{ dots }}" as="d" hint-placeholder-count="21">
+          <circle cx="{{ d.cx }}" cy="{{ d.cy }}" r="{{ d.r }}" fill="#FFFFFF" stroke="#2563EB" stroke-width="2.5"></circle>
+        </sc-for>
+
+        <line x1="64" x2="1376" y1="396" y2="396" stroke="#94A3B8" stroke-width="1.25"></line>
+
+        <sc-for list="{{ segments }}" as="s" hint-placeholder-count="30">
+          <rect x="{{ s.x }}" y="{{ s.y }}" width="{{ s.w }}" height="{{ s.h }}" rx="2" fill="{{ s.fill }}" opacity="{{ s.opacity }}"></rect>
+        </sc-for>
+
+        <sc-for list="{{ hitAreas }}" as="h" hint-placeholder-count="21">
+          <rect x="{{ h.x }}" y="20" width="{{ h.w }}" height="505" fill="#000000" fill-opacity="0" style="cursor:pointer" onMouseEnter="{{ h.enter }}" onClick="{{ h.click }}"></rect>
+        </sc-for>
+      </svg>
+
+      <div style="position:absolute;inset:0;pointer-events:none">
+        <sc-for list="{{ labels }}" as="t" hint-placeholder-count="30">
+          <div style="{{ t.style }}">{{ t.text }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:280px minmax(0,1fr);gap:0;border:1px solid #E2E8F0;background:#FFFFFF;border-radius:8px;overflow:hidden">
+    <div style="padding:20px 24px;border-right:1px solid #E2E8F0;display:flex;flex-direction:column;gap:10px;background:#F8FAFC">
+      <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748B">Selected year</div>
+      <div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;letter-spacing:-0.01em">{{ detail.year }}</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-family:'Geist Mono',monospace;font-size:40px;font-weight:500;line-height:1;letter-spacing:-0.02em">{{ detail.total }}</span>
+        <span style="font-size:13px;color:#64748B">aircraft in fleet</span>
+      </div>
+      <div style="{{ detail.netStyle }}">{{ detail.net }}</div>
+      <div style="font-size:12px;color:#94A3B8;line-height:1.5">{{ detail.yearNote }}</div>
+    </div>
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748B">{{ detail.heading }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <sc-for list="{{ detail.rows }}" as="r" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;border:1px solid #E2E8F0;border-radius:6px;padding:12px 16px;box-sizing:border-box;flex:1 1 210px;max-width:280px" style-hover="border-color:#CBD5E1">
+            <span style="{{ r.swatch }}"></span>
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;letter-spacing:-0.01em;white-space:nowrap">{{ r.type }}</span>
+                <span style="{{ r.numStyle }}">{{ r.count }}</span>
+              </span>
+              <span style="font-size:12px;color:#64748B;white-space:nowrap">{{ r.label }}</span>
+              <span style="font-size:12px;color:#94A3B8;white-space:nowrap">{{ r.when }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:13px;color:#64748B;line-height:1.5;text-wrap:pretty">{{ detail.note }}</div>
+    </div>
+  </div>
+
+   <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #E2E8F0;padding-top:16px">
+    <sc-for list="{{ footnotes }}" as="f" hint-placeholder-count="2">
+      <div style="display:flex;gap:10px;font-size:12px;color:#94A3B8;line-height:1.6;max-width:110ch">
+        <span style="font-family:'Geist Mono',monospace;color:#64748B;min-width:20px">{{ f.mark }}</span>
+        <span>{{ f.text }}</span>
+      </div>
+    </sc-for>
+    <div style="font-size:12px;color:#94A3B8;line-height:1.6">Fleet counts are calculated: an opening fleet of 19 aircraft, plus every induction listed, minus every phase-out and lease return listed. The source table's own Total column is shown for comparison in the selected-year panel, where it treats phased-out aircraft as replaced on a one-for-one basis and so runs higher in later years.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;fleetView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Area&quot;,&quot;Line&quot;],&quot;default&quot;:&quot;Area&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chart&quot;},&quot;showAllCounts&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chart&quot;}}">
+class Component extends DCLogic {
+  state = { hidden: {}, sel: 7, hover: null };
+
+  VBW = 1400;
+  VBH = 540;
+
+  componentDidMount() {
+    this._onData = () => this.forceUpdate();
+    window.addEventListener("fleetdata", this._onData);
+    if (window.FLEET_DATA) this.forceUpdate();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("fleetdata", this._onData);
+  }
+
+  toggle(k) {
+    this.setState(s => {
+      const h = Object.assign({}, s.hidden);
+      if (h[k]) delete h[k]; else h[k] = true;
+      return { hidden: h };
+    });
+  }
+
+  lab(x, y, text, opts) {
+    const o = opts || {};
+    const align = o.align || "center";
+    const tx = align === "center" ? "-50%" : align === "right" ? "-100%" : "0";
+    const ty = o.baseline === "top" ? "0" : o.baseline === "bottom" ? "-100%" : "-50%";
+    const rot = o.rotate ? " rotate(" + o.rotate + "deg)" : "";
+    return {
+      text: text,
+      style: {
+        position: "absolute",
+        left: (x / this.VBW * 100) + "%",
+        top: (y / this.VBH * 100) + "%",
+        transform: "translate(" + tx + "," + ty + ")" + rot,
+        transformOrigin: o.rotate ? "100% 50%" : "50% 50%",
+        whiteSpace: "nowrap",
+        fontFamily: o.sans ? "'Geist', sans-serif" : "'Geist Mono', monospace",
+        fontSize: (o.size || 12) + "px",
+        fontWeight: o.weight || 400,
+        letterSpacing: o.tracking || "0",
+        color: o.color || "#94A3B8"
+      }
+    };
+  }
+
+  shortFy(fy) {
+    return String(fy).replace("FY", "").replace("-20", "–");
+  }
+
+  ticks(min, max) {
+    const step = (max - min) > 30 ? 10 : 5;
+    const out = [];
+    for (let v = Math.ceil(min / step) * step; v <= max; v += step) out.push(v);
+    return out;
+  }
+
+  renderVals() {
+    const DATA = window.FLEET_DATA;
+    if (!DATA) {
+      return {
+        meta: {}, kpis: [], legend: [], gridlines: [], dots: [], segments: [],
+        labels: [], hitAreas: [], footnotes: [], areaPath: "", linePath: "",
+        activeCol: null, clearHover: () => {},
+        detail: { year: "Loading", total: "—", net: "", netStyle: {}, heading: "", rows: [], note: "", yearNote: "" }
+      };
+    }
+
+    const Y = DATA.years, N = Y.length, cats = DATA.cats, hidden = this.state.hidden;
+    const fleetView = this.props.fleetView ?? "Area";
+    const showAll = this.props.showAllCounts ?? true;
+
+    // Every listed movement changes the fleet count. A move is only fleet-neutral if the
+    // data marks it so explicitly (replaced: true on an exit, replacement: true on an induction).
+    const neutralUp = m => m.replacement === true;
+    const neutralDown = m => m.replaced === true;
+
+    const catDir = {};
+    cats.forEach(c => { catDir[c.k] = c.dir; });
+
+    const sums = Y.map(y => {
+      const s = { netMoves: 0 };
+      cats.forEach(c => { s[c.k] = 0; });
+      (y.moves || []).forEach(m => {
+        s[m.cat] = (s[m.cat] || 0) + m.n;
+        const up = catDir[m.cat] === 1;
+        if (up && !neutralUp(m)) s.netMoves += m.n;
+        if (!up && !neutralDown(m)) s.netMoves -= m.n;
+      });
+      return s;
+    });
+
+    const opening = DATA.meta.openingFleet ?? Y[0].total;
+    // Totals always come straight from fleet-data.js (the `total` field). The
+    // movement sums are still computed, but only to annotate the detail panel.
+    const totals = Y.map(y => y.total);
+    const tMin = Math.min.apply(null, totals) - 4;
+    const tMax = Math.max.apply(null, totals) + 4;
+
+    const x0 = 64, x1 = 1376, colW = (x1 - x0) / N;
+    const cx = i => x0 + colW * (i + 0.5);
+    const fTop = 44, fBot = 250;
+    const fy = t => fBot - ((t - tMin) / (tMax - tMin)) * (fBot - fTop);
+
+    const maxUp = Math.max(1, ...sums.map(s => cats.filter(c => c.dir === 1 && !hidden[c.k]).reduce((a, c) => a + s[c.k], 0)));
+    const maxDown = Math.max(1, ...sums.map(s => cats.filter(c => c.dir === -1 && !hidden[c.k]).reduce((a, c) => a + s[c.k], 0)));
+    const zero = 396, barW = 22;
+    const unit = Math.min(20, Math.min(126 / maxUp, 78 / maxDown));
+
+    const active = Math.min(this.state.hover != null ? this.state.hover : this.state.sel, N - 1);
+    const labels = [];
+
+    labels.push(this.lab(0, 20, "Total fleet", { sans: true, size: 12, weight: 500, color: "#64748B", tracking: "0.04em", align: "left" }));
+    labels.push(this.lab(0, 300, "Movements", { sans: true, size: 12, weight: 500, color: "#64748B", tracking: "0.04em", align: "left" }));
+
+    const gridlines = this.ticks(tMin, tMax).map(v => {
+      labels.push(this.lab(56, fy(v), String(v), { size: 12, align: "right", color: "#94A3B8" }));
+      return { y: fy(v) };
+    });
+
+    let line = "";
+    Y.forEach((y, i) => { line += (i ? " L" : "M") + cx(i).toFixed(1) + " " + fy(totals[i]).toFixed(1); });
+    const areaPath = fleetView === "Line" ? "" :
+      line + " L" + cx(N - 1).toFixed(1) + " " + fBot + " L" + cx(0).toFixed(1) + " " + fBot + " Z";
+
+    const dots = Y.map((y, i) => ({ cx: cx(i), cy: fy(totals[i]), r: i === active ? 6 : 3.5 }));
+    const peak = Math.max.apply(null, totals);
+
+    const segments = [];
+    Y.forEach((y, i) => {
+      const keyPoint = showAll || i === active || i === 0 || i === N - 1 || totals.indexOf(peak) === i;
+      if (keyPoint) labels.push(this.lab(cx(i), fy(totals[i]) - 16, String(totals[i]), {
+        size: i === active ? 15 : 13, weight: 500, color: i === active ? "#1D4ED8" : "#3B82F6"
+      }));
+
+      let up = zero, down = zero;
+      cats.forEach(c => {
+        const n = sums[i][c.k];
+        if (!n || hidden[c.k]) return;
+        const h = n * unit;
+        if (c.dir === 1) {
+          up -= h;
+          segments.push({ x: cx(i) - barW / 2, y: up, w: barW, h: Math.max(2, h - 1.5), fill: c.fill, opacity: i === active ? 1 : 0.8 });
+        } else {
+          segments.push({ x: cx(i) - barW / 2, y: down + 1.5, w: barW, h: Math.max(2, h - 1.5), fill: c.fill, opacity: i === active ? 1 : 0.8 });
+          down += h;
+        }
+      });
+      if (showAll || i === active) {
+        if (up < zero) labels.push(this.lab(cx(i), up - 12, "+" + Math.round((zero - up) / unit), { size: 13, weight: 500, color: "#0F172A" }));
+        if (down > zero) labels.push(this.lab(cx(i), down + 12, "−" + Math.round((down - zero) / unit), { size: 13, weight: 500, color: "#B91C1C" }));
+      }
+
+      labels.push(this.lab(cx(i) + 12, 500, this.shortFy(y.fy), {
+        size: 12, align: "right", rotate: -45,
+        weight: i === active ? 500 : 400,
+        color: i === active ? "#0F172A" : "#94A3B8"
+      }));
+    });
+
+    const legend = cats.map(c => ({
+      label: c.label,
+      count: (c.dir === 1 ? "+" : "−") + sums.reduce((a, s) => a + s[c.k], 0),
+      toggle: () => this.toggle(c.k),
+      style: {
+        display: "flex", alignItems: "center", gap: 8, background: "#FFFFFF",
+        border: "1px solid " + (hidden[c.k] ? "#E2E8F0" : "#CBD5E1"),
+        borderRadius: 6, padding: "7px 12px", cursor: "pointer",
+        fontFamily: "'Geist', sans-serif", fontSize: 13, color: "#0F172A",
+        opacity: hidden[c.k] ? 0.45 : 1,
+        transition: "border-color 150ms cubic-bezier(0.4,0,0.2,1), opacity 150ms cubic-bezier(0.4,0,0.2,1)"
+      },
+      swatch: { width: 10, height: 10, borderRadius: 3, background: c.fill, flex: "0 0 auto" }
+    }));
+
+    const hitAreas = Y.map((y, i) => ({
+      x: x0 + colW * i, w: colW,
+      enter: () => this.setState({ hover: i }),
+      click: () => this.setState({ sel: i, hover: i })
+    }));
+
+    const y = Y[active];
+    const cur = totals[active];
+    const prev = active > 0 ? totals[active - 1] : opening;
+    const net = cur - prev;
+    const catOf = k => cats.find(c => c.k === k) || { label: k, fill: "#94A3B8", dir: 1 };
+    const rows = (y.moves || []).map(m => {
+      const c = catOf(m.cat);
+      const neutral = c.dir === 1 ? neutralUp(m) : neutralDown(m);
+      return {
+        type: m.type + (m.mark || ""),
+        count: (c.dir === 1 ? "+" : "−") + m.n + " aircraft",
+        label: c.label + (neutral ? " · replaced in kind" : ""),
+        when: m.when || "timing not stated",
+        swatch: { width: 8, height: 48, borderRadius: 2, background: c.fill, flex: "0 0 auto" },
+        numStyle: { fontFamily: "'Geist Mono', monospace", fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", color: c.dir === 1 ? "#0F172A" : "#B91C1C" }
+      };
+    });
+
+    const inTotal = sums.reduce((a, s) => a + cats.filter(c => c.dir === 1).reduce((b, c) => b + s[c.k], 0), 0);
+    const outTotal = sums.reduce((a, s) => a + cats.filter(c => c.dir === -1).reduce((b, c) => b + s[c.k], 0), 0);
+    const peakYears = Y.filter((v, i) => totals[i] === peak).map(v => this.shortFy(v.fy));
+
+    const detail = {
+      year: y.fy,
+      total: String(cur),
+      <!-- net: (net > 0 ? "+" : net < 0 ? "−" : "±") + Math.abs(net) + (active === 0 ? " vs opening fleet of " + opening : " vs prior year"), -->
+      netStyle: { fontFamily: "'Geist Mono', monospace", fontSize: 13, color: net > 0 ? "#16A34A" : net < 0 ? "#DC2626" : "#64748B" },
+      yearNote: y.note || "",
+      heading: rows.length ? "Aircraft moving this year" : "No movements this year",
+      rows,
+      note: !rows.length
+        ? "Fleet holds at " + cur + " aircraft."
+        : ((y.moves || []).some(m => catOf(m.cat).dir === 1 ? neutralUp(m) : neutralDown(m))
+          ? "Aircraft replaced in kind leave and re-enter the fleet in the same year, so they do not change the count."
+          : "")
+    };
+
+    const nm = sums[active].netMoves;
+    const sign = nm > 0 ? "+" : nm < 0 ? "−" : "±";
+    const ok = net === nm;
+    detail.sum = prev + " " + (net > 0 ? "+" : net < 0 ? "−" : "±") + " " + Math.abs(net) + " = " + cur;
+    detail.sumNote = ok
+      ? "From the source table; the movements listed below account for the change"
+      : "From the source table. The movements listed below come to " + sign + Math.abs(nm) + ", a difference of " + Math.abs(net - nm) + ".";
+    detail.sumStyle = {
+      fontFamily: "'Geist Mono', monospace", fontSize: 12, lineHeight: 1.5,
+      color: ok ? "#16A34A" : "#D97706"
+    };
+
+    const kpis = [
+      { label: "Start " + this.shortFy(Y[0].fy), value: String(totals[0]), note: "from an opening fleet of " + opening },
+      { label: "Peak fleet", value: String(peak), note: peakYears.length > 2 ? peakYears[0] + " onwards" : peakYears.join(" and ") },
+      { label: "End " + this.shortFy(Y[N - 1].fy), value: String(totals[N - 1]), note: "as stated in the source" },
+      { label: "Inductions", value: String(inTotal), note: "Boeing, Airbus and leased" },
+      { label: "Exits", value: String(outTotal), note: "phase-outs and lease returns" }
+    ];
+
+    const meta = {
+      airline: DATA.meta.airline,
+      baseline: DATA.meta.baseline,
+      range: this.shortFy(Y[0].fy) + " to " + this.shortFy(Y[N - 1].fy) + ", " + N + " fiscal years.",
+      counts: inTotal + " inductions / " + outTotal + " exits"
+    };
+
+    return {
+      meta, kpis, legend, gridlines, dots, segments, labels, hitAreas, detail,
+      footnotes: DATA.footnotes || [],
+      areaPath, linePath: line,
+      activeCol: { x: x0 + colW * active + 3, w: colW - 6 },
+      clearHover: () => this.setState({ hover: null })
+    };
+  }
+}
+</script>
+</body>
+</html>
