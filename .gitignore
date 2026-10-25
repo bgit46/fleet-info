@@ -1,6 +1,7 @@
 # Source material — not part of the site, keep it off GitHub
 uploads/
 scraps/
+*.pdf
 
 # Editor / local-history noise
 .history/

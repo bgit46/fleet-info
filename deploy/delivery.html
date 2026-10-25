@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biman Aircraft Delivery Schedule</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="./delivery-data.js"></script>
+<style>
+  body { margin: 0; background: #F8FAFC; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { color: #1D4ED8; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#F8FAFC;color:#020617;font-family:'Geist',system-ui,sans-serif;padding:32px 40px 48px;display:flex;flex-direction:column;gap:20px;max-width:1480px;margin:0 auto;box-sizing:border-box">
+
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid #E2E8F0;padding-bottom:18px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#64748B">{{ meta.airline }}</div>
+      <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.01em;line-height:1.2">Delivery schedule of the purchased aircraft</h1>
+      <div style="font-size:13px;color:#64748B;line-height:1.5">Hover or click a half-year to see which aircraft arrive. &nbsp;·&nbsp; <a href="./index.html">Fleet timeline &rarr;</a></div>
+    </div>
+    <div style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B;text-align:right;white-space:nowrap">{{ meta.counts }}<br />{{ meta.range }}</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+      <div style="border:1px solid #E2E8F0;background:#FFFFFF;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748B">{{ k.label }}</div>
+        <div style="font-family:'Geist Mono',monospace;font-size:26px;font-weight:500;line-height:1;letter-spacing:-0.01em">{{ k.value }}</div>
+        <div style="font-size:12px;color:#94A3B8">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <sc-for list="{{ legend }}" as="c" hint-placeholder-count="5">
+      <button onClick="{{ c.toggle }}" style="{{ c.style }}" style-hover="border-color:#CBD5E1">
+        <span style="{{ c.swatch }}"></span>
+        <span>{{ c.label }}</span>
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B">{{ c.count }}</span>
+      </button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div style="font-size:12px;color:#94A3B8">Click a chip to hide that aircraft type</div>
+  </div>
+
+  <div style="border:1px solid #E2E8F0;background:#FFFFFF;border-radius:8px;padding:12px 16px 40px">
+    <div style="position:relative">
+      <svg viewBox="0 0 1400 540" style="width:100%;height:auto;display:block" onMouseLeave="{{ clearHover }}">
+        <sc-if value="{{ activeCol }}" hint-placeholder-val="{{ true }}">
+          <rect x="{{ activeCol.x }}" y="30" width="{{ activeCol.w }}" height="465" fill="#2563EB" opacity="0.055" rx="4"></rect>
+        </sc-if>
+
+        <sc-for list="{{ gridlines }}" as="g" hint-placeholder-count="4">
+          <line x1="64" x2="1376" y1="{{ g.y }}" y2="{{ g.y }}" stroke="#E2E8F0" stroke-width="1"></line>
+        </sc-for>
+
+        <path d="{{ areaPath }}" fill="#2563EB" opacity="0.09"></path>
+        <path d="{{ linePath }}" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>
+        <sc-for list="{{ dots }}" as="d" hint-placeholder-count="9">
+          <circle cx="{{ d.cx }}" cy="{{ d.cy }}" r="{{ d.r }}" fill="#FFFFFF" stroke="#2563EB" stroke-width="2.5"></circle>
+        </sc-for>
+
+        <line x1="64" x2="1376" y1="470" y2="470" stroke="#94A3B8" stroke-width="1.25"></line>
+
+        <sc-for list="{{ segments }}" as="s" hint-placeholder-count="20">
+          <rect x="{{ s.x }}" y="{{ s.y }}" width="{{ s.w }}" height="{{ s.h }}" rx="3" fill="{{ s.fill }}" opacity="{{ s.opacity }}"></rect>
+        </sc-for>
+
+        <sc-for list="{{ hitAreas }}" as="h" hint-placeholder-count="9">
+          <rect x="{{ h.x }}" y="20" width="{{ h.w }}" height="505" fill="#000000" fill-opacity="0" style="cursor:pointer" onMouseEnter="{{ h.enter }}" onClick="{{ h.click }}"></rect>
+        </sc-for>
+      </svg>
+
+      <div style="position:absolute;inset:0;pointer-events:none">
+        <sc-for list="{{ labels }}" as="t" hint-placeholder-count="40">
+          <div style="{{ t.style }}">{{ t.text }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:280px minmax(0,1fr);gap:0;border:1px solid #E2E8F0;background:#FFFFFF;border-radius:8px;overflow:hidden">
+    <div style="padding:20px 24px;border-right:1px solid #E2E8F0;display:flex;flex-direction:column;gap:10px;background:#F8FAFC">
+      <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748B">Selected period</div>
+      <div style="font-family:'Geist Mono',monospace;font-size:20px;font-weight:500;letter-spacing:-0.01em">{{ detail.period }}</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-family:'Geist Mono',monospace;font-size:40px;font-weight:500;line-height:1;letter-spacing:-0.02em">{{ detail.count }}</span>
+        <span style="font-size:13px;color:#64748B">aircraft delivered</span>
+      </div>
+      <div style="font-family:'Geist Mono',monospace;font-size:13px;color:#2563EB">{{ detail.cumulative }}</div>
+      <div style="font-size:12px;color:#94A3B8;line-height:1.5">{{ detail.span }}</div>
+    </div>
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748B">{{ detail.heading }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <sc-for list="{{ detail.rows }}" as="r" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;border:1px solid #E2E8F0;border-radius:6px;padding:12px 16px;box-sizing:border-box;flex:1 1 210px;max-width:280px" style-hover="border-color:#CBD5E1">
+            <span style="{{ r.swatch }}"></span>
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-family:'Geist Mono',monospace;font-size:16px;font-weight:500;letter-spacing:-0.01em;white-space:nowrap">{{ r.type }}</span>
+                <span style="{{ r.numStyle }}">{{ r.count }}</span>
+              </span>
+              <span style="font-size:12px;color:#64748B;white-space:nowrap">{{ r.contract }}</span>
+              <span style="font-size:12px;color:#94A3B8;white-space:nowrap">{{ r.when }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:13px;color:#64748B;line-height:1.5;text-wrap:pretty">{{ detail.note }}</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #E2E8F0;padding-top:16px">
+    <sc-for list="{{ contractNotes }}" as="c" hint-placeholder-count="3">
+      <div style="display:flex;gap:10px;font-size:12px;color:#94A3B8;line-height:1.6">
+        <span style="font-family:'Geist Mono',monospace;color:#64748B;min-width:150px">{{ c.label }}</span>
+        <span>{{ c.text }}</span>
+      </div>
+    </sc-for>
+    <div style="font-size:12px;color:#94A3B8;line-height:1.6;max-width:110ch">Boeing deliveries are stated to the month; Airbus deliveries only to the half-year ("1st Sem 2034"). Half-years are therefore the finest bucket both share, and the chart is built on them. The exact wording from the source is kept in the panel above.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;cumulativeView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Area&quot;,&quot;Line&quot;],&quot;default&quot;:&quot;Area&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chart&quot;},&quot;showAllCounts&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chart&quot;}}">
+class Component extends DCLogic {
+  state = { hidden: {}, sel: 6, hover: null };
+
+  VBW = 1400;
+  VBH = 540;
+
+  componentDidMount() {
+    this._onData = () => this.forceUpdate();
+    window.addEventListener("deliverydata", this._onData);
+    if (window.DELIVERY_DATA) this.forceUpdate();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("deliverydata", this._onData);
+  }
+
+  toggle(k) {
+    this.setState(s => {
+      const h = Object.assign({}, s.hidden);
+      if (h[k]) delete h[k]; else h[k] = true;
+      return { hidden: h };
+    });
+  }
+
+  lab(x, y, text, opts) {
+    const o = opts || {};
+    const align = o.align || "center";
+    const tx = align === "center" ? "-50%" : align === "right" ? "-100%" : "0";
+    const ty = o.baseline === "top" ? "0" : o.baseline === "bottom" ? "-100%" : "-50%";
+    const rot = o.rotate ? " rotate(" + o.rotate + "deg)" : "";
+    return {
+      text: text,
+      style: {
+        position: "absolute",
+        left: (x / this.VBW * 100) + "%",
+        top: (y / this.VBH * 100) + "%",
+        transform: "translate(" + tx + "," + ty + ")" + rot,
+        transformOrigin: o.rotate ? "100% 50%" : "50% 50%",
+        whiteSpace: "nowrap",
+        fontFamily: o.sans ? "'Geist', sans-serif" : "'Geist Mono', monospace",
+        fontSize: (o.size || 12) + "px",
+        fontWeight: o.weight || 400,
+        letterSpacing: o.tracking || "0",
+        color: o.color || "#94A3B8"
+      }
+    };
+  }
+
+  ticks(min, max) {
+    const step = (max - min) > 30 ? 10 : 5;
+    const out = [];
+    for (let v = Math.ceil(min / step) * step; v <= max; v += step) out.push(v);
+    return out;
+  }
+
+  /* Every half-year from the first delivery to the last, including any with
+     nothing in them, so the timeline has no gaps. */
+  buildPeriods(deliveries) {
+    let lo = null, hi = null;
+    deliveries.forEach(d => {
+      const n = d.year * 2 + (d.half - 1);
+      if (lo === null || n < lo) lo = n;
+      if (hi === null || n > hi) hi = n;
+    });
+    const out = [];
+    for (let n = lo; n <= hi; n++) {
+      out.push({ key: n, year: Math.floor(n / 2), half: (n % 2) + 1 });
+    }
+    return out;
+  }
+
+  periodLabel(p) {
+    return p.year + " H" + p.half;
+  }
+
+  periodLong(p) {
+    return (p.half === 1 ? "1st half " : "2nd half ") + p.year;
+  }
+
+  renderVals() {
+    const DATA = window.DELIVERY_DATA;
+    if (!DATA) {
+      return {
+        meta: {}, kpis: [], legend: [], gridlines: [], dots: [], segments: [],
+        labels: [], hitAreas: [], contractNotes: [], areaPath: "", linePath: "",
+        activeCol: null, clearHover: () => {},
+        detail: { period: "Loading", count: "—", cumulative: "", span: "", heading: "", rows: [], note: "" }
+      };
+    }
+
+    const types = DATA.types, hidden = this.state.hidden;
+    const view = this.props.cumulativeView ?? "Area";
+    const showAll = this.props.showAllCounts ?? true;
+
+    const shown = d => !hidden[d.type];
+    const periods = this.buildPeriods(DATA.deliveries);
+    const N = periods.length;
+
+    // Per-period counts by type, and the per-period total of the types still shown.
+    const sums = periods.map(p => {
+      const s = { total: 0 };
+      types.forEach(t => { s[t.k] = 0; });
+      DATA.deliveries.forEach(d => {
+        if (d.year !== p.year || d.half !== p.half) return;
+        s[d.type] = (s[d.type] || 0) + 1;
+        if (shown(d)) s.total += 1;
+      });
+      return s;
+    });
+
+    // The cumulative line follows the same filter as the bars, so hiding a type
+    // shows how the fleet would build up without it.
+    let run = 0;
+    const cumulative = sums.map(s => { run += s.total; return run; });
+
+    const tMin = 0;
+    const tMax = Math.max(5, Math.max.apply(null, cumulative)) + 3;
+
+    const x0 = 64, x1 = 1376, colW = (x1 - x0) / N;
+    const cx = i => x0 + colW * (i + 0.5);
+    const fTop = 44, fBot = 250;
+    const fy = t => fBot - ((t - tMin) / (tMax - tMin)) * (fBot - fTop);
+
+    const maxPer = Math.max(1, ...sums.map(s => s.total));
+    const zero = 470, barW = 36;
+    const unit = Math.min(24, 160 / maxPer);
+
+    const active = Math.min(this.state.hover != null ? this.state.hover : this.state.sel, N - 1);
+    const labels = [];
+
+    labels.push(this.lab(0, 20, "Cumulative delivered", { sans: true, size: 12, weight: 500, color: "#64748B", tracking: "0.04em", align: "left" }));
+    labels.push(this.lab(0, 292, "Deliveries per half-year", { sans: true, size: 12, weight: 500, color: "#64748B", tracking: "0.04em", align: "left" }));
+
+    const gridlines = this.ticks(tMin, tMax).map(v => {
+      labels.push(this.lab(56, fy(v), String(v), { size: 12, align: "right", color: "#94A3B8" }));
+      return { y: fy(v) };
+    });
+
+    let line = "";
+    periods.forEach((p, i) => { line += (i ? " L" : "M") + cx(i).toFixed(1) + " " + fy(cumulative[i]).toFixed(1); });
+    const areaPath = view === "Line" ? "" :
+      line + " L" + cx(N - 1).toFixed(1) + " " + fBot + " L" + cx(0).toFixed(1) + " " + fBot + " Z";
+
+    const dots = periods.map((p, i) => ({ cx: cx(i), cy: fy(cumulative[i]), r: i === active ? 6 : 3.5 }));
+
+    const segments = [];
+    periods.forEach((p, i) => {
+      const keyPoint = showAll || i === active || i === 0 || i === N - 1;
+      if (keyPoint) labels.push(this.lab(cx(i), fy(cumulative[i]) - 16, String(cumulative[i]), {
+        size: i === active ? 15 : 13, weight: 500, color: i === active ? "#1D4ED8" : "#3B82F6"
+      }));
+
+      let up = zero;
+      types.forEach(t => {
+        const n = sums[i][t.k];
+        if (!n || hidden[t.k]) return;
+        const h = n * unit;
+        up -= h;
+        segments.push({ x: cx(i) - barW / 2, y: up, w: barW, h: Math.max(2, h - 2), fill: t.fill, opacity: i === active ? 1 : 0.85 });
+      });
+
+      if ((showAll || i === active) && sums[i].total > 0) {
+        labels.push(this.lab(cx(i), up - 12, String(sums[i].total), { size: 13, weight: 500, color: "#0F172A" }));
+      }
+
+      labels.push(this.lab(cx(i) + 12, 505, this.periodLabel(p), {
+        size: 12, align: "right", rotate: -45,
+        weight: i === active ? 500 : 400,
+        color: i === active ? "#0F172A" : "#94A3B8"
+      }));
+    });
+
+    const legend = types.map(t => ({
+      label: t.label,
+      count: String(DATA.deliveries.filter(d => d.type === t.k).length),
+      toggle: () => this.toggle(t.k),
+      style: {
+        display: "flex", alignItems: "center", gap: 8, background: "#FFFFFF",
+        border: "1px solid " + (hidden[t.k] ? "#E2E8F0" : "#CBD5E1"),
+        borderRadius: 6, padding: "7px 12px", cursor: "pointer",
+        fontFamily: "'Geist', sans-serif", fontSize: 13, color: "#0F172A",
+        opacity: hidden[t.k] ? 0.45 : 1,
+        transition: "border-color 150ms cubic-bezier(0.4,0,0.2,1), opacity 150ms cubic-bezier(0.4,0,0.2,1)"
+      },
+      swatch: { width: 10, height: 10, borderRadius: 3, background: t.fill, flex: "0 0 auto" }
+    }));
+
+    const hitAreas = periods.map((p, i) => ({
+      x: x0 + colW * i, w: colW,
+      enter: () => this.setState({ hover: i }),
+      click: () => this.setState({ sel: i, hover: i })
+    }));
+
+    const p = periods[active];
+    const typeOf = k => types.find(t => t.k === k) || { label: k, fill: "#94A3B8" };
+    const contractOf = k => (DATA.contracts.find(c => c.k === k) || { label: k, signed: "" });
+
+    // Identical aircraft arriving on the same terms are one row with a count.
+    const groups = [];
+    DATA.deliveries.forEach(d => {
+      if (d.year !== p.year || d.half !== p.half || hidden[d.type]) return;
+      const found = groups.find(g => g.type === d.type && g.contract === d.contract && g.when === d.when);
+      if (found) found.n += 1;
+      else groups.push({ type: d.type, contract: d.contract, when: d.when, n: 1 });
+    });
+
+    const rows = groups.map(g => {
+      const t = typeOf(g.type);
+      const c = contractOf(g.contract);
+      return {
+        type: t.label,
+        count: "+" + g.n + " aircraft",
+        contract: c.label + " · " + c.signed,
+        when: g.when,
+        swatch: { width: 8, height: 48, borderRadius: 2, background: t.fill, flex: "0 0 auto" },
+        numStyle: { fontFamily: "'Geist Mono', monospace", fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", color: "#0F172A" }
+      };
+    });
+
+    const totalShown = cumulative[N - 1];
+    const busiest = sums.reduce((best, s, i) => s.total > sums[best].total ? i : best, 0);
+
+    const detail = {
+      period: this.periodLong(p),
+      count: String(sums[active].total),
+      cumulative: cumulative[active] + " of " + totalShown + " delivered by then",
+      span: periods.length + " half-years from " + this.periodLong(periods[0]) + " to " + this.periodLong(periods[N - 1]),
+      heading: rows.length ? "Aircraft arriving this half-year" : "No deliveries this half-year",
+      rows,
+      note: rows.length
+        ? ""
+        : "Nothing is scheduled to arrive in this period. The fleet holds at " + cumulative[active] + " delivered."
+    };
+
+    const kpis = [
+      { label: "Aircraft on order", value: String(totalShown), note: DATA.contracts.length + " contracts" },
+      { label: "First delivery", value: this.periodLabel(periods[0]), note: "the earliest aircraft arrives" },
+      { label: "Busiest half-year", value: this.periodLabel(periods[busiest]), note: sums[busiest].total + " aircraft arrive" },
+      { label: "Last delivery", value: this.periodLabel(periods[N - 1]), note: "the programme completes" },
+      { label: "Half-years", value: String(N), note: "from first to last delivery" }
+    ];
+
+    const contractNotes = DATA.contracts.map(c => ({
+      label: c.label,
+      text: "signed " + c.signed + " · " + DATA.deliveries.filter(d => d.contract === c.k).length + " aircraft"
+    }));
+
+    const meta = {
+      airline: DATA.meta.airline,
+      counts: totalShown + " aircraft / " + DATA.contracts.length + " contracts",
+      range: this.periodLabel(periods[0]) + " to " + this.periodLabel(periods[N - 1])
+    };
+
+    return {
+      meta, kpis, legend, gridlines, dots, segments, labels, hitAreas, detail, contractNotes,
+      areaPath, linePath: line,
+      activeCol: { x: x0 + colW * active + 3, w: colW - 6 },
+      clearHover: () => this.setState({ hover: null })
+    };
+  }
+}
+</script>
+</body>
+</html>
