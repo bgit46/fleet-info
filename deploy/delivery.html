@@ -208,12 +208,14 @@ class Component extends DCLogic {
     return out;
   }
 
+  /* The source writes Airbus dates as "1st Sem 2034" / "2nd Sem 2034", so the
+     chart uses that wording rather than inventing an H1 / H2 of its own. */
   periodLabel(p) {
-    return p.year + " H" + p.half;
+    return (p.half === 1 ? "1st Sem " : "2nd Sem ") + p.year;
   }
 
   periodLong(p) {
-    return (p.half === 1 ? "1st half " : "2nd half ") + p.year;
+    return this.periodLabel(p);
   }
 
   renderVals() {
@@ -357,13 +359,23 @@ class Component extends DCLogic {
     });
 
     const totalShown = cumulative[N - 1];
+
+    // One entry per manufacturer, in the order the contracts list them.
+    const byMaker = [];
+    DATA.contracts.forEach(c => {
+      const maker = c.maker || c.label;
+      const n = DATA.deliveries.filter(d => d.contract === c.k && !hidden[d.type]).length;
+      const found = byMaker.find(m => m.maker === maker);
+      if (found) found.n += n;
+      else byMaker.push({ maker: maker, n: n });
+    });
     const busiest = sums.reduce((best, s, i) => s.total > sums[best].total ? i : best, 0);
 
     const detail = {
       period: this.periodLong(p),
       count: String(sums[active].total),
       cumulative: cumulative[active] + " of " + totalShown + " delivered by then",
-      span: periods.length + " half-years from " + this.periodLong(periods[0]) + " to " + this.periodLong(periods[N - 1]),
+      span: "Programme runs " + this.periodLabel(periods[0]) + " to " + this.periodLabel(periods[N - 1]),
       heading: rows.length ? "Aircraft arriving this half-year" : "No deliveries this half-year",
       rows,
       note: rows.length
@@ -374,9 +386,9 @@ class Component extends DCLogic {
     const kpis = [
       { label: "Aircraft on order", value: String(totalShown), note: DATA.contracts.length + " contracts" },
       { label: "First delivery", value: this.periodLabel(periods[0]), note: "the earliest aircraft arrives" },
-      { label: "Busiest half-year", value: this.periodLabel(periods[busiest]), note: sums[busiest].total + " aircraft arrive" },
+      { label: "Busiest period", value: this.periodLabel(periods[busiest]), note: sums[busiest].total + " aircraft arrive" },
       { label: "Last delivery", value: this.periodLabel(periods[N - 1]), note: "the programme completes" },
-      { label: "Half-years", value: String(N), note: "from first to last delivery" }
+      { label: "By manufacturer", value: byMaker.map(m => m.n).join(" / "), note: byMaker.map(m => m.maker).join(" / ") }
     ];
 
     const contractNotes = DATA.contracts.map(c => ({

@@ -23,9 +23,9 @@ window.DELIVERY_DATA = {
   },
 
   contracts: [
-    { k: "paBoeing", label: "PA with Boeing", signed: "30 April 2026" },
-    { k: "saBoeing", label: "SA with Boeing", signed: "21 September 2026" },
-    { k: "paAirbus", label: "PA with Airbus", signed: "7 October 2026" }
+    { k: "paBoeing", label: "PA with Boeing", signed: "30 April 2026", maker: "Boeing" },
+    { k: "saBoeing", label: "SA with Boeing", signed: "21 September 2026", maker: "Boeing" },
+    { k: "paAirbus", label: "PA with Airbus", signed: "7 October 2026", maker: "Airbus" }
   ],
 
   // Stack order is the order below, and the fills are validated for colour-blind
