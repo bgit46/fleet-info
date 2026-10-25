@@ -25,9 +25,15 @@
       <div style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#64748B">{{ meta.airline }}</div>
       <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-0.01em;line-height:1.2">Projected phase-out, replacement, purchase and lease of aircraft</h1>
       <!-- <div style="font-size:14px;color:#64748B;line-height:1.5;max-width:78ch">{{ meta.range }} Hover or click a fiscal year to see the aircraft moving in and out.</div> -->
-      <div style="font-size:13px;color:#64748B;line-height:1.5"><a href="./delivery.html">Delivery schedule &rarr;</a></div>
     </div>
-    <div style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B;text-align:right;white-space:nowrap">{{ meta.counts }}<br />{{ meta.baseline }}</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+      <div style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B;text-align:right;white-space:nowrap">{{ meta.counts }}<br />{{ meta.baseline }}</div>
+      <a href="./delivery.html" style="display:inline-flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #CBD5E1;border-radius:6px;padding:8px 14px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;color:#0F172A;text-decoration:none;white-space:nowrap;cursor:pointer;transition:border-color 150ms cubic-bezier(0.4,0,0.2,1),background 150ms cubic-bezier(0.4,0,0.2,1)" style-hover="border-color:#94A3B8;background:#F8FAFC">
+        <span style="width:8px;height:8px;border-radius:2px;background:#2563EB;flex:0 0 auto"></span>
+        <span>Delivery schedule</span>
+        <span style="color:#64748B">&rarr;</span>
+      </a>
+    </div>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
